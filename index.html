@@ -1,0 +1,1464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Maliha Nahiyan Srotosshini — Interactive Media · Artist · Maker</title>
+<meta name="description" content="Portfolio of Maliha Nahiyan Srotosshini — Interactive Media at NYU Abu Dhabi. Creative coding, 3D, Unity, photography, typography." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,300;1,9..144,400&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+/* ===== BLUE-FORWARD DREAMY PALETTE ===== */
+:root {
+  --ink:          #1a2a44;
+  --ink-soft:     #5a6e8c;
+  --night:        #0f1c33;
+  --sky:          #c4d9ec;
+  --sky-deep:     #7fa6c8;
+  --periwinkle:   #aebde0;
+  --powder:       #dde8f3;
+  --cream:        #f5f1e6;
+  --butter:       #f0dca0;
+  --rose:         #e9b8b0;
+  --accent:       #2c6cb0;
+  --accent-hot:   #c25b5b;
+
+  --font-display: "Fraunces", "Instrument Serif", Georgia, serif;
+  --font-italic:  "Instrument Serif", "Fraunces", Georgia, serif;
+  --font-mono:    "DM Mono", ui-monospace, monospace;
+
+  --grain-opacity: 0.09;
+  --section-pad: clamp(4rem, 10vw, 9rem);
+}
+
+/* ===== RESET / BASE ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--cream);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-optical-sizing: auto;
+  line-height: 1.5;
+  overflow-x: hidden;
+  cursor: none;
+}
+body::before {
+  content: ""; position: fixed; inset: 0;
+  pointer-events: none; z-index: 9998;
+  opacity: var(--grain-opacity);
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.1  0 0 0 0 0.17  0 0 0 0 0.27  0 0 0 0.6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+body::after {
+  content: ""; position: fixed; inset: 0;
+  pointer-events: none; z-index: 9997;
+  background: radial-gradient(ellipse at center, transparent 50%, rgba(15,28,51,0.15) 100%);
+}
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; background: none; border: none; cursor: none; }
+img { max-width: 100%; display: block; }
+
+/* ===== CUSTOM CURSOR ===== */
+.cursor-dot, .cursor-ring {
+  position: fixed; top: 0; left: 0;
+  pointer-events: none; z-index: 10000;
+  border-radius: 50%;
+  mix-blend-mode: multiply;
+}
+.cursor-dot {
+  width: 8px; height: 8px;
+  background: var(--accent);
+  transform: translate(-50%, -50%);
+  transition: width .25s ease, height .25s ease, background .25s ease;
+}
+.cursor-ring {
+  width: 42px; height: 42px;
+  border: 1px solid var(--ink);
+  transform: translate(-50%, -50%);
+  transition: width .3s cubic-bezier(.2,.8,.2,1), height .3s cubic-bezier(.2,.8,.2,1),
+              border-color .3s, background .3s, transform .15s;
+}
+.cursor-ring.hovering { width: 80px; height: 80px; background: var(--butter); border-color: transparent; }
+.cursor-ring.text-hover { width: 100px; height: 100px; background: var(--sky); border-color: transparent; }
+.cursor-ring.drag { width: 90px; height: 90px; background: var(--periwinkle); border-color: transparent; }
+.cursor-label {
+  position: fixed; top: 0; left: 0;
+  pointer-events: none; z-index: 10001;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink);
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity .25s;
+}
+.cursor-label.show { opacity: 1; }
+.ripple {
+  position: fixed; pointer-events: none;
+  border-radius: 50%;
+  background: var(--sky-deep);
+  mix-blend-mode: multiply;
+  z-index: 9999;
+  animation: ripple-anim .8s cubic-bezier(.2,.8,.2,1) forwards;
+}
+@keyframes ripple-anim {
+  0%   { width: 0; height: 0; opacity: 0.7; transform: translate(-50%,-50%); }
+  100% { width: 220px; height: 220px; opacity: 0; transform: translate(-50%,-50%); }
+}
+
+/* ===== LOADER ===== */
+.loader {
+  position: fixed; inset: 0;
+  background: var(--cream);
+  z-index: 10001;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 1.2rem;
+  transition: opacity .8s ease, visibility .8s ease;
+}
+.loader.gone { opacity: 0; visibility: hidden; }
+.loader-name {
+  font-family: var(--font-italic); font-style: italic;
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+}
+.loader-bar {
+  width: 240px; height: 1px;
+  background: rgba(26,42,68,0.15);
+  position: relative; overflow: hidden;
+}
+.loader-bar::after {
+  content: ""; position: absolute; top: 0; left: 0;
+  height: 100%; width: 0%;
+  background: var(--accent);
+  animation: load 2s ease forwards;
+}
+@keyframes load { to { width: 100%; } }
+.loader-meta {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+/* ===== NAV ===== */
+nav.top {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 1.5rem 2rem;
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  mix-blend-mode: multiply;
+}
+nav.top .logo {
+  font-family: var(--font-italic); font-style: italic;
+  font-size: 1.05rem;
+  text-transform: none; letter-spacing: 0;
+}
+nav.top .menu-btn {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.5rem 0; position: relative;
+}
+nav.top .menu-btn::after {
+  content: ""; position: absolute; bottom: 0; left: 0; right: 0;
+  height: 1px; background: var(--ink);
+  transform: scaleX(0); transform-origin: right;
+  transition: transform .4s ease;
+}
+nav.top .menu-btn:hover::after { transform: scaleX(1); transform-origin: left; }
+.menu-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--accent-hot);
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%      { transform: scale(1.6); opacity: 0.4; }
+}
+.menu-overlay {
+  position: fixed; inset: 0;
+  background: var(--night); color: var(--cream);
+  z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 0.3rem;
+  opacity: 0; visibility: hidden;
+  transition: opacity .5s ease, visibility .5s;
+}
+.menu-overlay.open { opacity: 1; visibility: visible; }
+.menu-overlay a {
+  font-family: var(--font-italic); font-style: italic;
+  font-size: clamp(2.2rem, 7vw, 5.5rem);
+  color: var(--cream); line-height: 1.05;
+  padding: 0.3rem 0; position: relative;
+  opacity: 0; transform: translateY(20px);
+  transition: opacity .5s ease, transform .5s ease, color .3s;
+}
+.menu-overlay.open a { opacity: 1; transform: translateY(0); }
+.menu-overlay.open a:nth-child(1) { transition-delay: .1s; }
+.menu-overlay.open a:nth-child(2) { transition-delay: .16s; }
+.menu-overlay.open a:nth-child(3) { transition-delay: .22s; }
+.menu-overlay.open a:nth-child(4) { transition-delay: .28s; }
+.menu-overlay.open a:nth-child(5) { transition-delay: .34s; }
+.menu-overlay.open a:nth-child(6) { transition-delay: .40s; }
+.menu-overlay.open a:nth-child(7) { transition-delay: .46s; }
+.menu-overlay.open a:nth-child(8) { transition-delay: .52s; }
+.menu-overlay a:hover { color: var(--butter); }
+.menu-close {
+  position: absolute; top: 1.5rem; right: 2rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cream);
+}
+
+/* ===== HERO ===== */
+.hero {
+  min-height: 100vh;
+  position: relative;
+  padding: 8rem 2rem 4rem;
+  display: flex; flex-direction: column; justify-content: center;
+}
+.hero-meta {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  display: flex; justify-content: space-between;
+  position: absolute;
+  top: 6rem; left: 2rem; right: 2rem;
+}
+.hero-title {
+  font-size: clamp(3.2rem, 11vw, 10rem);
+  line-height: 0.92;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  max-width: 16ch;
+  will-change: transform;
+}
+.hero-title .it { font-family: var(--font-italic); font-style: italic; font-weight: 400; }
+.hero-title .deco { display: inline-block; color: var(--accent); font-style: italic; font-family: var(--font-italic); }
+.hero-title .word {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(40px) rotate(-2deg);
+  animation: word-in 1s cubic-bezier(.2,.8,.2,1) forwards;
+}
+.hero-title .word:nth-child(1) { animation-delay: 0.2s; }
+.hero-title .word:nth-child(2) { animation-delay: 0.35s; }
+.hero-title .word:nth-child(3) { animation-delay: 0.5s; }
+.hero-title .word:nth-child(4) { animation-delay: 0.65s; }
+.hero-title .word:nth-child(5) { animation-delay: 0.8s; }
+.hero-title .word:nth-child(6) { animation-delay: 0.95s; }
+.hero-title .word:nth-child(7) { animation-delay: 1.1s; }
+.hero-title .word:nth-child(8) { animation-delay: 1.25s; }
+@keyframes word-in { to { opacity: 1; transform: translateY(0) rotate(0); } }
+
+.hero-sub {
+  margin-top: 2rem;
+  max-width: 42ch;
+  font-size: clamp(1rem, 1.4vw, 1.15rem);
+  line-height: 1.6;
+  color: var(--ink-soft);
+  opacity: 0;
+  animation: fade-up 1s ease 1.5s forwards;
+}
+@keyframes fade-up { to { opacity: 1; } }
+
+.hero-shapes { position: absolute; inset: 0; pointer-events: none; z-index: -1; overflow: hidden; }
+.shape {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(50px);
+  opacity: 0.7;
+  will-change: transform;
+  transition: transform .8s ease-out;
+}
+.shape.s1 { top: 8%;  right: 6%;  width: 380px; height: 380px; background: var(--periwinkle); animation: float 14s ease-in-out infinite; }
+.shape.s2 { bottom: 6%; left: 10%; width: 300px; height: 300px; background: var(--sky-deep);  animation: float 18s ease-in-out infinite reverse; }
+.shape.s3 { top: 38%;  left: 32%;  width: 240px; height: 240px; background: var(--butter); animation: float 22s ease-in-out infinite; }
+.shape.s4 { top: 55%;  right: 22%; width: 180px; height: 180px; background: var(--rose);    animation: float 26s ease-in-out infinite reverse; opacity: 0.45; }
+@keyframes float {
+  0%, 100% { transform: translate(0,0) scale(1); }
+  33%      { transform: translate(40px, -30px) scale(1.1); }
+  66%      { transform: translate(-30px, 40px) scale(0.95); }
+}
+
+.scroll-indicator {
+  position: absolute;
+  bottom: 3rem; left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  display: flex; flex-direction: column; align-items: center; gap: 0.6rem;
+}
+.scroll-indicator::after {
+  content: ""; width: 1px; height: 38px;
+  background: var(--ink-soft);
+  animation: scroll-tick 2s ease-in-out infinite;
+  transform-origin: top;
+}
+@keyframes scroll-tick {
+  0%, 100% { transform: scaleY(0.3); opacity: 0.3; }
+  50%      { transform: scaleY(1); opacity: 1; }
+}
+
+/* ===== MARQUEE ===== */
+.marquee {
+  overflow: hidden;
+  border-top: 1px solid rgba(26,42,68,0.15);
+  border-bottom: 1px solid rgba(26,42,68,0.15);
+  padding: 1.2rem 0;
+  background: var(--cream);
+}
+.marquee-track {
+  display: flex; gap: 3rem; white-space: nowrap;
+  animation: marquee 50s linear infinite;
+  font-family: var(--font-italic); font-style: italic;
+  font-size: clamp(1.2rem, 2.2vw, 2rem);
+}
+.marquee-track span { display: inline-flex; align-items: center; gap: 3rem; }
+.marquee-track .dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--accent);
+  display: inline-block;
+}
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* ===== SECTION CHROME ===== */
+section.work-section { padding: var(--section-pad) 2rem; position: relative; }
+.section-label {
+  display: flex; align-items: center; gap: 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 2.5rem;
+}
+.section-label .num {
+  background: var(--ink); color: var(--cream);
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.65rem;
+}
+.section-label .line { flex: 1; height: 1px; background: rgba(26,42,68,0.15); }
+.section-title {
+  font-size: clamp(2.5rem, 7vw, 6rem);
+  line-height: 0.95;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  margin-bottom: 1rem;
+}
+.section-title .it { font-family: var(--font-italic); font-style: italic; }
+.section-title .deco { color: var(--accent); font-family: var(--font-italic); font-style: italic; }
+.section-intro {
+  font-size: 1.05rem;
+  max-width: 56ch;
+  color: var(--ink-soft);
+  margin-bottom: 4rem;
+  line-height: 1.65;
+}
+
+/* ===== CREATIVE CODING ===== */
+.cc-section { background: linear-gradient(180deg, var(--cream) 0%, var(--powder) 100%); }
+.cc-mains { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem; }
+.cc-smalls { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; }
+.cc-card {
+  position: relative;
+  background: var(--night);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 20px 50px -20px rgba(15,28,51,0.3);
+  transition: transform .4s cubic-bezier(.2,.8,.2,1);
+}
+.cc-card:hover { transform: translateY(-6px); }
+.cc-card .frame-wrap { position: relative; aspect-ratio: 1 / 1; overflow: hidden; }
+.cc-card.main .frame-wrap { aspect-ratio: 4 / 3; }
+.cc-card iframe {
+  width: 100%; height: 100%;
+  border: none; display: block;
+  background: var(--night);
+}
+.cc-card .card-foot {
+  padding: 1rem 1.2rem;
+  display: flex; justify-content: space-between; align-items: center;
+  background: var(--cream);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.cc-card .card-foot h3 {
+  font-family: var(--font-italic); font-style: italic;
+  font-weight: 400;
+  font-size: 1.1rem;
+  text-transform: none; letter-spacing: 0;
+}
+.cc-card.main .card-foot h3 { font-size: 1.4rem; }
+.cc-card .card-foot .ext { color: var(--accent); font-weight: 500; }
+.cc-note {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  text-align: center;
+  margin-top: 2rem;
+  display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+}
+.cc-note .dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--accent-hot);
+  animation: pulse 2s ease-in-out infinite;
+}
+@media (max-width: 900px) {
+  .cc-mains { grid-template-columns: 1fr; }
+  .cc-smalls { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ===== 3D MODELS ===== */
+.threed-scroll {
+  display: flex; gap: 1.5rem;
+  overflow-x: auto;
+  padding: 1rem 0 2rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--sky-deep) transparent;
+  cursor: none;
+}
+.threed-scroll::-webkit-scrollbar { height: 4px; }
+.threed-scroll::-webkit-scrollbar-thumb { background: var(--sky-deep); border-radius: 999px; }
+.threed-card {
+  flex: 0 0 380px;
+  height: 480px;
+  background: var(--cream);
+  border: 1px solid rgba(26,42,68,0.12);
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+  display: flex; flex-direction: column;
+}
+.threed-card .preview {
+  height: 70%;
+  background: linear-gradient(135deg, var(--sky), var(--periwinkle));
+  position: relative; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+.threed-card .preview svg {
+  width: 60%; height: 60%;
+  animation: rotate3d 12s linear infinite;
+}
+@keyframes rotate3d {
+  from { transform: rotateY(0deg) rotateX(15deg); }
+  to   { transform: rotateY(360deg) rotateX(15deg); }
+}
+.threed-card .info { padding: 1.5rem; flex: 1; }
+.threed-card h3 {
+  font-family: var(--font-italic); font-style: italic;
+  font-size: 1.5rem; margin-bottom: 0.4rem;
+}
+.threed-card .tag {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.threed-card .badge {
+  position: absolute; top: 1rem; right: 1rem;
+  background: var(--cream);
+  padding: 0.3rem 0.7rem;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  border-radius: 999px;
+}
+.scroll-hint {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-top: 1rem;
+}
+
+/* ===== UNITY GAMES ===== */
+.games { display: flex; flex-direction: column; gap: 6rem; }
+.game-row {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 3rem; align-items: center;
+}
+.game-row:nth-child(even) { direction: rtl; }
+.game-row:nth-child(even) > * { direction: ltr; }
+.game-preview {
+  aspect-ratio: 16 / 10;
+  background: var(--night);
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 30px 60px -20px rgba(15,28,51,0.4);
+  transition: transform .4s ease;
+}
+.game-preview:hover { transform: scale(1.02); }
+.game-preview .canvas-placeholder {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(circle at 30% 40%, var(--periwinkle) 0%, transparent 50%),
+    radial-gradient(circle at 70% 60%, var(--sky-deep) 0%, transparent 50%),
+    var(--night);
+}
+.game-preview .play-overlay {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(15,28,51,0.4);
+  opacity: 0;
+  transition: opacity .3s;
+}
+.game-preview:hover .play-overlay { opacity: 1; }
+.play-circle {
+  width: 80px; height: 80px;
+  border: 1px solid var(--cream);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--cream);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+.game-info h3 {
+  font-size: clamp(2rem, 3.5vw, 3rem);
+  font-weight: 300; line-height: 1;
+  margin-bottom: 1rem;
+}
+.game-info h3 .it { font-family: var(--font-italic); font-style: italic; }
+.game-info .specs {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 1.5rem;
+  display: flex; gap: 1.5rem; flex-wrap: wrap;
+}
+.game-info p {
+  font-size: 1rem;
+  color: var(--ink-soft);
+  line-height: 1.65;
+  max-width: 45ch;
+}
+
+/* ===== PHOTOGRAPHY ===== */
+.photo-section { background: linear-gradient(180deg, var(--cream) 0%, var(--powder) 100%); }
+.masonry { columns: 3; column-gap: 1rem; }
+.photo {
+  break-inside: avoid;
+  margin-bottom: 1rem;
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+  transition: transform .5s ease;
+}
+.photo:hover { transform: scale(1.02); }
+.photo .swatch { width: 100%; display: block; }
+.photo-caption {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 1.5rem 1rem 0.8rem;
+  background: linear-gradient(transparent, rgba(15,28,51,0.6));
+  color: var(--cream);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  opacity: 0;
+  transition: opacity .3s;
+}
+.photo:hover .photo-caption { opacity: 1; }
+.photo-1 .swatch { aspect-ratio: 3/4; background: linear-gradient(160deg, #b0c4d8, #5a7a98); }
+.photo-2 .swatch { aspect-ratio: 4/5; background: linear-gradient(200deg, #d8c89a, #a89472); }
+.photo-3 .swatch { aspect-ratio: 1/1; background: linear-gradient(135deg, #b8c8d4, #7a96a8); }
+.photo-4 .swatch { aspect-ratio: 3/4; background: linear-gradient(180deg, #e0d5b8, #b89878); }
+.photo-5 .swatch { aspect-ratio: 4/3; background: linear-gradient(220deg, #98a8c8, #5868a0); }
+.photo-6 .swatch { aspect-ratio: 2/3; background: linear-gradient(145deg, #b8c8d8, #6878a0); }
+.photo-7 .swatch { aspect-ratio: 4/5; background: linear-gradient(170deg, #d0c8a8, #98886c); }
+.photo-8 .swatch { aspect-ratio: 1/1; background: linear-gradient(190deg, #a0b0c8, #506890); }
+.photo-9 .swatch { aspect-ratio: 3/4; background: linear-gradient(155deg, #c0c8d8, #708098); }
+@media (max-width: 900px) { .masonry { columns: 2; } }
+@media (max-width: 560px) { .masonry { columns: 1; } }
+
+/* ===== TYPOGRAPHY ===== */
+.type-section { padding: var(--section-pad) 0; }
+.type-section .section-label,
+.type-section .section-title,
+.type-section .section-intro { padding-left: 2rem; padding-right: 2rem; }
+.type-spread {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  align-items: stretch;
+  border-top: 1px solid rgba(26,42,68,0.15);
+  border-bottom: 1px solid rgba(26,42,68,0.15);
+}
+.type-cell {
+  border-right: 1px solid rgba(26,42,68,0.15);
+  padding: 3rem 1.5rem;
+  display: flex; flex-direction: column;
+  justify-content: space-between;
+  min-height: 320px;
+  background: var(--cream);
+  transition: background .4s, color .4s;
+}
+.type-cell:last-child { border-right: none; }
+.type-cell:hover { background: var(--sky); }
+.type-cell .glyph {
+  font-size: clamp(5rem, 12vw, 10rem);
+  line-height: 1; font-weight: 300;
+}
+.type-cell .glyph.it { font-family: var(--font-italic); font-style: italic; }
+.type-cell .label {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.type-cell.a { grid-column: span 4; }
+.type-cell.b { grid-column: span 3; background: var(--periwinkle); }
+.type-cell.c { grid-column: span 5; }
+.type-cell.d { grid-column: span 6; background: var(--butter); }
+.type-cell.e { grid-column: span 6; }
+.type-cell h4 {
+  font-family: var(--font-italic); font-style: italic;
+  font-size: 2rem; font-weight: 400;
+  margin-bottom: 0.5rem;
+}
+.type-cell .lorem { font-size: 0.9rem; line-height: 1.6; color: var(--ink-soft); }
+@media (max-width: 900px) {
+  .type-cell.a, .type-cell.b, .type-cell.c,
+  .type-cell.d, .type-cell.e {
+    grid-column: span 12;
+    border-bottom: 1px solid rgba(26,42,68,0.15);
+  }
+}
+
+/* ===== SELECTED PROJECTS ===== */
+.projects-list { display: flex; flex-direction: column; gap: 2.5rem; max-width: 1000px; }
+.proj {
+  border-top: 1px solid rgba(26,42,68,0.2);
+  padding-top: 2rem;
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 2rem;
+  transition: padding-left .35s ease;
+}
+.proj:hover { padding-left: 1.2rem; }
+.proj .pmeta {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.proj .pmeta .sub { color: var(--ink-soft); }
+.proj h3 {
+  font-family: var(--font-italic); font-style: italic;
+  font-size: clamp(1.6rem, 2.5vw, 2.4rem);
+  font-weight: 400;
+  margin-bottom: 0.4rem;
+}
+.proj .role {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 1rem;
+}
+.proj p { color: var(--ink-soft); line-height: 1.7; }
+.proj:last-child { border-bottom: 1px solid rgba(26,42,68,0.2); padding-bottom: 2rem; }
+@media (max-width: 700px) {
+  .proj { grid-template-columns: 1fr; gap: 0.8rem; }
+}
+
+/* ===== ABOUT ===== */
+.about {
+  padding: var(--section-pad) 2rem;
+  background: var(--night);
+  color: var(--cream);
+  position: relative;
+  overflow: hidden;
+}
+.about::before {
+  content: "✿";
+  position: absolute;
+  font-size: 32rem;
+  color: rgba(196,217,236,0.04);
+  top: -6rem; right: -6rem;
+  font-family: var(--font-italic);
+}
+.about .section-label { color: rgba(245,241,230,0.5); }
+.about .section-label .num { background: var(--cream); color: var(--night); }
+.about .section-label .line { background: rgba(245,241,230,0.15); }
+.about-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 4rem; position: relative; z-index: 1;
+}
+.about-text h2 {
+  font-size: clamp(2.5rem, 5vw, 4.5rem);
+  font-weight: 300; line-height: 1;
+  margin-bottom: 2rem;
+}
+.about-text h2 .it { font-family: var(--font-italic); font-style: italic; color: var(--butter); }
+.about-text p {
+  font-size: 1.1rem; line-height: 1.7;
+  margin-bottom: 1.5rem; max-width: 50ch;
+  color: rgba(245,241,230,0.85);
+}
+.about-text p em { font-family: var(--font-italic); font-style: italic; color: var(--butter); }
+.contact-list { list-style: none; border-top: 1px solid rgba(245,241,230,0.2); }
+.contact-list li {
+  border-bottom: 1px solid rgba(245,241,230,0.2);
+  padding: 1.5rem 0;
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  transition: padding .3s, color .3s;
+  gap: 1rem;
+}
+.contact-list li:hover { padding-left: 1rem; color: var(--butter); }
+.contact-list .label {
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  color: rgba(245,241,230,0.5);
+  flex-shrink: 0;
+}
+.contact-list .val { text-align: right; }
+.contact-list .arrow { font-size: 1.1rem; }
+.exhibitions {
+  margin-top: 4rem; padding-top: 3rem;
+  border-top: 1px solid rgba(245,241,230,0.2);
+  position: relative; z-index: 1;
+}
+.exhibitions h3 {
+  font-family: var(--font-italic); font-style: italic;
+  font-size: 2rem; font-weight: 400; margin-bottom: 2rem;
+}
+.exhibitions ul { list-style: none; }
+.exhibitions li {
+  padding: 1rem 0;
+  border-bottom: 1px solid rgba(245,241,230,0.15);
+  display: grid;
+  grid-template-columns: 100px 1fr auto;
+  gap: 1.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  align-items: baseline;
+  transition: padding .3s;
+}
+.exhibitions li:hover { padding-left: 0.8rem; }
+.exhibitions .yr { color: var(--butter); }
+.exhibitions .ev {
+  font-family: var(--font-italic); font-style: italic;
+  font-size: 1.05rem;
+  text-transform: none; letter-spacing: 0;
+}
+.exhibitions .pl {
+  color: rgba(245,241,230,0.5);
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+}
+@media (max-width: 900px) {
+  .about-grid { grid-template-columns: 1fr; }
+  .game-row { grid-template-columns: 1fr; }
+  .game-row:nth-child(even) { direction: ltr; }
+  .exhibitions li { grid-template-columns: 1fr; gap: 0.3rem; }
+}
+
+/* ===== FOOTER ===== */
+footer {
+  padding: 3rem 2rem;
+  background: var(--night);
+  color: rgba(245,241,230,0.6);
+  border-top: 1px solid rgba(245,241,230,0.15);
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  flex-wrap: wrap; gap: 1rem;
+}
+footer .heart {
+  color: var(--butter);
+  font-family: var(--font-italic); font-style: italic;
+  text-transform: none; letter-spacing: 0;
+}
+
+/* ===== REVEAL ===== */
+.reveal {
+  opacity: 0; transform: translateY(40px);
+  transition: opacity 1s cubic-bezier(.2,.8,.2,1), transform 1s cubic-bezier(.2,.8,.2,1);
+}
+.reveal.in { opacity: 1; transform: translateY(0); }
+
+@media (hover: none) {
+  body { cursor: auto; }
+  button, a { cursor: pointer; }
+  .cursor-dot, .cursor-ring, .cursor-label { display: none; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- LOADER -->
+<div class="loader" id="loader">
+  <div class="loader-meta">Loading the archive…</div>
+  <div class="loader-name">Maliha Nahiyan Srotosshini</div>
+  <div class="loader-bar"></div>
+</div>
+
+<!-- CURSOR -->
+<div class="cursor-dot" id="cursorDot"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+<div class="cursor-label" id="cursorLabel"></div>
+
+<!-- NAV -->
+<nav class="top">
+  <div class="logo" data-cursor="text">Maliha N. Srotosshini</div>
+  <button class="menu-btn" id="menuBtn" data-cursor="hover" data-label="Open">
+    <span class="menu-dot"></span> Index
+  </button>
+</nav>
+
+<!-- MENU -->
+<div class="menu-overlay" id="menuOverlay">
+  <button class="menu-close" id="menuClose" data-cursor="hover">Close ✕</button>
+  <a href="#code"     data-cursor="text" data-close>01 — Creative Coding</a>
+  <a href="#threed"   data-cursor="text" data-close>02 — 3D Models</a>
+  <a href="#games"    data-cursor="text" data-close>03 — Unity Games</a>
+  <a href="#photo"    data-cursor="text" data-close>04 — Photography</a>
+  <a href="#type"     data-cursor="text" data-close>05 — Typography</a>
+  <a href="#projects" data-cursor="text" data-close>06 — Selected Projects</a>
+  <a href="#about"    data-cursor="text" data-close>07 — About / Contact</a>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-shapes" id="heroShapes">
+    <div class="shape s1"></div>
+    <div class="shape s2"></div>
+    <div class="shape s3"></div>
+    <div class="shape s4"></div>
+  </div>
+
+  <div class="hero-meta">
+    <span>Portfolio / Vol. 01</span>
+    <span>Abu Dhabi ⟶ Shanghai · 2026</span>
+  </div>
+
+  <h1 class="hero-title" id="heroTitle">
+    <span class="word">a</span>
+    <span class="word it">soft</span>
+    <span class="word">archive</span><br>
+    <span class="word">of</span>
+    <span class="word deco">interactive</span><br>
+    <span class="word">things,</span>
+    <span class="word it">made</span>
+    <span class="word deco">with care</span><span style="color: var(--accent-hot);">.</span>
+  </h1>
+
+  <p class="hero-sub">
+    Maliha — Interactive Media at NYU Abu Dhabi.
+    A creative, first. I work across creative coding, 3D, games, photography and
+    the quiet poetry of type — and tend to end up running the logistics too.
+    <em style="font-family: var(--font-italic);">Welcome in.</em>
+  </p>
+
+  <div class="scroll-indicator">scroll</div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee">
+  <div class="marquee-track">
+    <span>Creative Coding <span class="dot"></span></span>
+    <span>3D &amp; Digital Sculpture <span class="dot"></span></span>
+    <span>Unity Games <span class="dot"></span></span>
+    <span>Photography <span class="dot"></span></span>
+    <span>Color Grading <span class="dot"></span></span>
+    <span>Typography <span class="dot"></span></span>
+    <span>Physical Fabrication <span class="dot"></span></span>
+    <span>Creative Coding <span class="dot"></span></span>
+    <span>3D &amp; Digital Sculpture <span class="dot"></span></span>
+    <span>Unity Games <span class="dot"></span></span>
+    <span>Photography <span class="dot"></span></span>
+    <span>Color Grading <span class="dot"></span></span>
+    <span>Typography <span class="dot"></span></span>
+    <span>Physical Fabrication <span class="dot"></span></span>
+  </div>
+</div>
+
+<!-- 01 CREATIVE CODING -->
+<section class="work-section cc-section reveal" id="code">
+  <div class="section-label">
+    <span class="num">01</span>
+    <span>Creative Coding</span>
+    <span class="line"></span>
+    <span>Live p5.js sketches</span>
+  </div>
+  <h2 class="section-title">Sketches that <span class="it">breathe</span>.</h2>
+  <p class="section-intro">Live, interactive — these are the actual p5.js sketches running in their own little frames. Click into any of them, move your mouse around, see what happens. From Nature of Code and self-directed studies.</p>
+
+  <div class="cc-mains">
+    <div class="cc-card main" data-cursor="hover" data-label="Interact">
+      <div class="frame-wrap">
+        <iframe src="https://editor.p5js.org/Nekonxtdoor/full/lg6vLqLVy" title="p5 sketch — main 01" loading="lazy" allow="autoplay; fullscreen"></iframe>
+      </div>
+      <div class="card-foot">
+        <h3>Sketch / Main 01</h3>
+        <a href="https://editor.p5js.org/Nekonxtdoor/full/lg6vLqLVy" target="_blank" rel="noopener" class="ext" data-cursor="hover">Open ↗</a>
+      </div>
+    </div>
+    <div class="cc-card main" data-cursor="hover" data-label="Interact">
+      <div class="frame-wrap">
+        <iframe src="https://editor.p5js.org/Nekonxtdoor/full/e5DUJD_m4" title="p5 sketch — main 02" loading="lazy" allow="autoplay; fullscreen"></iframe>
+      </div>
+      <div class="card-foot">
+        <h3>Sketch / Main 02</h3>
+        <a href="https://editor.p5js.org/Nekonxtdoor/full/e5DUJD_m4" target="_blank" rel="noopener" class="ext" data-cursor="hover">Open ↗</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="cc-smalls">
+    <div class="cc-card" data-cursor="hover" data-label="Interact">
+      <div class="frame-wrap">
+        <iframe src="https://editor.p5js.org/Nekonxtdoor/full/edWcp0wDY" title="p5 sketch 03" loading="lazy" allow="autoplay; fullscreen"></iframe>
+      </div>
+      <div class="card-foot">
+        <h3>Study 03</h3>
+        <a href="https://editor.p5js.org/Nekonxtdoor/full/edWcp0wDY" target="_blank" rel="noopener" class="ext" data-cursor="hover">↗</a>
+      </div>
+    </div>
+    <div class="cc-card" data-cursor="hover" data-label="Interact">
+      <div class="frame-wrap">
+        <iframe src="https://editor.p5js.org/Nekonxtdoor/full/bu8I8q-KB" title="p5 sketch 04" loading="lazy" allow="autoplay; fullscreen"></iframe>
+      </div>
+      <div class="card-foot">
+        <h3>Study 04</h3>
+        <a href="https://editor.p5js.org/Nekonxtdoor/full/bu8I8q-KB" target="_blank" rel="noopener" class="ext" data-cursor="hover">↗</a>
+      </div>
+    </div>
+    <div class="cc-card" data-cursor="hover" data-label="Interact">
+      <div class="frame-wrap">
+        <iframe src="https://editor.p5js.org/Nekonxtdoor/full/saSmxmzcl" title="p5 sketch 05" loading="lazy" allow="autoplay; fullscreen"></iframe>
+      </div>
+      <div class="card-foot">
+        <h3>Study 05</h3>
+        <a href="https://editor.p5js.org/Nekonxtdoor/full/saSmxmzcl" target="_blank" rel="noopener" class="ext" data-cursor="hover">↗</a>
+      </div>
+    </div>
+    <div class="cc-card" data-cursor="hover" data-label="Interact">
+      <div class="frame-wrap">
+        <iframe src="https://editor.p5js.org/Nekonxtdoor/full/96WCVovt2" title="p5 sketch 06" loading="lazy" allow="autoplay; fullscreen"></iframe>
+      </div>
+      <div class="card-foot">
+        <h3>Study 06</h3>
+        <a href="https://editor.p5js.org/Nekonxtdoor/full/96WCVovt2" target="_blank" rel="noopener" class="ext" data-cursor="hover">↗</a>
+      </div>
+    </div>
+    <div class="cc-card" data-cursor="hover" data-label="Interact">
+      <div class="frame-wrap">
+        <iframe src="https://editor.p5js.org/Nekonxtdoor/full/r94ImvHFU" title="p5 sketch 07" loading="lazy" allow="autoplay; fullscreen"></iframe>
+      </div>
+      <div class="card-foot">
+        <h3>Study 07</h3>
+        <a href="https://editor.p5js.org/Nekonxtdoor/full/r94ImvHFU" target="_blank" rel="noopener" class="ext" data-cursor="hover">↗</a>
+      </div>
+    </div>
+  </div>
+
+  <p class="cc-note"><span class="dot"></span> Each frame is live — click in, drag, move. The sketches respond.</p>
+</section>
+
+<!-- 02 3D MODELS -->
+<section class="work-section reveal" id="threed">
+  <div class="section-label">
+    <span class="num">02</span>
+    <span>3D &amp; Digital Sculpture</span>
+    <span class="line"></span>
+    <span>Modelled, lit, rendered</span>
+  </div>
+  <h2 class="section-title">Objects, <span class="it">imagined</span>.</h2>
+  <p class="section-intro">A small museum of forms — sculpted in Blender and ZBrush. Some destined for Unity, some for print, all rendered with intention. Swap these for your real renders or Sketchfab embeds when you're ready.</p>
+
+  <div class="threed-scroll" id="threedScroll" data-cursor="drag" data-label="Drag">
+    <div class="threed-card" data-cursor="hover">
+      <div class="preview">
+        <span class="badge">Interactive</span>
+        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <g fill="none" stroke="rgba(245,241,230,0.95)" stroke-width="1.5">
+            <path d="M 100 30 L 170 70 L 170 130 L 100 170 L 30 130 L 30 70 Z"/>
+            <path d="M 100 30 L 100 170"/>
+            <path d="M 30 70 L 170 130"/>
+            <path d="M 170 70 L 30 130"/>
+            <path d="M 30 70 L 100 110 L 170 70"/>
+            <path d="M 100 110 L 100 170"/>
+          </g>
+        </svg>
+      </div>
+      <div class="info">
+        <h3>Lantern study 01</h3>
+        <span class="tag">Blender · 2k tris · GLB</span>
+      </div>
+    </div>
+
+    <div class="threed-card" data-cursor="hover">
+      <div class="preview" style="background: linear-gradient(135deg, var(--butter), var(--periwinkle));">
+        <span class="badge">Interactive</span>
+        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <g fill="none" stroke="rgba(26,42,68,0.9)" stroke-width="1.5">
+            <ellipse cx="100" cy="120" rx="60" ry="20"/>
+            <path d="M 40 120 Q 40 50 100 40 Q 160 50 160 120"/>
+            <path d="M 100 40 L 100 120"/>
+            <path d="M 70 50 Q 70 100 100 120"/>
+            <path d="M 130 50 Q 130 100 100 120"/>
+          </g>
+        </svg>
+      </div>
+      <div class="info">
+        <h3>Vessel</h3>
+        <span class="tag">ZBrush + Blender · PBR</span>
+      </div>
+    </div>
+
+    <div class="threed-card" data-cursor="hover">
+      <div class="preview" style="background: linear-gradient(135deg, var(--sky-deep), var(--butter));">
+        <span class="badge">Render</span>
+        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <g fill="rgba(245,241,230,0.4)" stroke="rgba(26,42,68,0.9)" stroke-width="1.5">
+            <rect x="60" y="40" width="80" height="120" rx="6"/>
+            <rect x="70" y="50" width="60" height="30" fill="rgba(26,42,68,0.2)"/>
+            <circle cx="100" cy="120" r="15" fill="rgba(26,42,68,0.2)"/>
+          </g>
+        </svg>
+      </div>
+      <div class="info">
+        <h3>Little radio</h3>
+        <span class="tag">Hard surface · cycles</span>
+      </div>
+    </div>
+
+    <div class="threed-card" data-cursor="hover">
+      <div class="preview" style="background: linear-gradient(135deg, var(--night), var(--sky));">
+        <span class="badge">Interactive</span>
+        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <g fill="none" stroke="rgba(245,241,230,0.95)" stroke-width="1.2">
+            <circle cx="100" cy="100" r="60"/>
+            <ellipse cx="100" cy="100" rx="60" ry="20"/>
+            <ellipse cx="100" cy="100" rx="20" ry="60"/>
+            <path d="M 40 100 Q 100 40 160 100"/>
+            <path d="M 40 100 Q 100 160 160 100"/>
+          </g>
+        </svg>
+      </div>
+      <div class="info">
+        <h3>Orbiter</h3>
+        <span class="tag">Procedural · Geo nodes</span>
+      </div>
+    </div>
+
+    <div class="threed-card" data-cursor="hover">
+      <div class="preview" style="background: linear-gradient(135deg, var(--rose), var(--periwinkle));">
+        <span class="badge">Render</span>
+        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <g fill="none" stroke="rgba(26,42,68,0.9)" stroke-width="1.3">
+            <path d="M 100 30 Q 60 80 100 130 Q 140 80 100 30 Z"/>
+            <path d="M 100 130 L 100 170"/>
+            <ellipse cx="100" cy="170" rx="20" ry="6"/>
+          </g>
+        </svg>
+      </div>
+      <div class="info">
+        <h3>Bloom</h3>
+        <span class="tag">Sculpt · subsurface</span>
+      </div>
+    </div>
+  </div>
+  <p class="scroll-hint">← drag to explore →</p>
+</section>
+
+<!-- 03 UNITY GAMES -->
+<section class="work-section reveal" id="games">
+  <div class="section-label">
+    <span class="num">03</span>
+    <span>Unity Games</span>
+    <span class="line"></span>
+    <span>Playable worlds</span>
+  </div>
+  <h2 class="section-title">Small <span class="it">worlds</span>, big feelings.</h2>
+  <p class="section-intro">Game prototypes and finished pieces built in Unity. Includes work from the Endless Studio Game Jam (featured entry, 2025) and environment art for student-led projects.</p>
+
+  <div class="games">
+    <article class="game-row">
+      <a href="#" class="game-preview" data-cursor="hover" data-label="Play">
+        <div class="canvas-placeholder"></div>
+        <div class="play-overlay"><div class="play-circle">▶ Play</div></div>
+      </a>
+      <div class="game-info">
+        <h3>Endless <span class="it">Studio</span> entry</h3>
+        <div class="specs">
+          <span>Unity 2022</span>
+          <span>48-hour jam</span>
+          <span>featured</span>
+          <span>art direction · 3D env · sound</span>
+        </div>
+        <p>An atmospheric exploration short built with a small team in a weekend. Took the lead on visual direction and 3D environment art in Blender, brought assets into Unity, and handled the sound pass. Selected among the jam's featured entries.</p>
+      </div>
+    </article>
+
+    <article class="game-row">
+      <a href="#" class="game-preview" data-cursor="hover" data-label="Play">
+        <div class="canvas-placeholder" style="background: radial-gradient(circle at 60% 30%, var(--butter) 0%, transparent 50%), radial-gradient(circle at 30% 70%, var(--periwinkle) 0%, transparent 50%), var(--night);"></div>
+        <div class="play-overlay"><div class="play-circle">▶ Play</div></div>
+      </a>
+      <div class="game-info">
+        <h3>Environmental <span class="it">sampling</span></h3>
+        <div class="specs">
+          <span>Unity URP</span>
+          <span>coursework</span>
+          <span>WebGL</span>
+        </div>
+        <p>A study from Environmental Sampling with Unity — a small interactive scene exploring procedural placement, atmospheric lighting, and player-driven discovery. Replace this card with the build you want featured.</p>
+      </div>
+    </article>
+
+    <article class="game-row">
+      <a href="#" class="game-preview" data-cursor="hover" data-label="Play">
+        <div class="canvas-placeholder" style="background: radial-gradient(circle at 50% 50%, var(--sky) 0%, transparent 50%), radial-gradient(circle at 80% 20%, var(--butter) 0%, transparent 40%), var(--night);"></div>
+        <div class="play-overlay"><div class="play-circle">▶ Play</div></div>
+      </a>
+      <div class="game-info">
+        <h3>WIP / <span class="it">untitled</span></h3>
+        <div class="specs">
+          <span>Unity</span>
+          <span>solo</span>
+          <span>in progress</span>
+        </div>
+        <p>Placeholder for a current Unity build. When you have a WebGL export ready, drop the build folder into <code>games/</code> and link to its <code>index.html</code>.</p>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- 04 PHOTOGRAPHY -->
+<section class="work-section photo-section reveal" id="photo">
+  <div class="section-label">
+    <span class="num">04</span>
+    <span>Photography &amp; Color Grading</span>
+    <span class="line"></span>
+    <span>Light, held still</span>
+  </div>
+  <h2 class="section-title">Frames I <span class="it">kept</span>.</h2>
+  <p class="section-intro">Stills from across Bangladesh, the Gulf, and East Asia. Mostly DSLR and mirrorless, graded in Lightroom and DaVinci Resolve. Replace each gradient placeholder with a real image when you're ready.</p>
+
+  <div class="masonry">
+    <div class="photo photo-1" data-cursor="hover"><div class="swatch"></div><div class="photo-caption">Blue hour · 35mm</div></div>
+    <div class="photo photo-2" data-cursor="hover"><div class="swatch"></div><div class="photo-caption">Field study · graded</div></div>
+    <div class="photo photo-3" data-cursor="hover"><div class="swatch"></div><div class="photo-caption">Cool morning</div></div>
+    <div class="photo photo-4" data-cursor="hover"><div class="swatch"></div><div class="photo-caption">Warm contrast</div></div>
+    <div class="photo photo-5" data-cursor="hover"><div class="swatch"></div><div class="photo-caption">Dusk frame</div></div>
+    <div class="photo photo-6" data-cursor="hover"><div class="swatch"></div><div class="photo-caption">Greenhouse</div></div>
+    <div class="photo photo-7" data-cursor="hover"><div class="swatch"></div><div class="photo-caption">Honey hour</div></div>
+    <div class="photo photo-8" data-cursor="hover"><div class="swatch"></div><div class="photo-caption">Indoor cyan</div></div>
+    <div class="photo photo-9" data-cursor="hover"><div class="swatch"></div><div class="photo-caption">Sand and slate</div></div>
+  </div>
+</section>
+
+<!-- 05 TYPOGRAPHY -->
+<section class="work-section type-section reveal" id="type">
+  <div class="section-label">
+    <span class="num">05</span>
+    <span>Typography</span>
+    <span class="line"></span>
+    <span>Letters, with weight</span>
+  </div>
+  <h2 class="section-title">Set in <span class="it">soft</span> ink.</h2>
+  <p class="section-intro">Custom lockups, type-only posters, editorial spreads. I treat typography like photography — it's about light, weight, and what you choose to leave out.</p>
+
+  <div class="type-spread">
+    <div class="type-cell a" data-cursor="hover"><div class="glyph it">Aa</div><div class="label">Display · custom</div></div>
+    <div class="type-cell b" data-cursor="hover"><div class="glyph">&amp;</div><div class="label">Ampersand study</div></div>
+    <div class="type-cell c" data-cursor="hover">
+      <h4>Editorial poster series</h4>
+      <p class="lorem">Three-part typographic exploration printed risograph on 80gsm. Soft inks, hard grids.</p>
+      <div class="label">2025 · risograph</div>
+    </div>
+    <div class="type-cell d" data-cursor="hover">
+      <h4>A specimen of softness</h4>
+      <p class="lorem">A type specimen built around Fraunces and a custom italic, published as a small zine.</p>
+      <div class="label">Self-initiated</div>
+    </div>
+    <div class="type-cell e" data-cursor="hover"><div class="glyph it">↻</div><div class="label">Wayfinding system</div></div>
+  </div>
+</section>
+
+<!-- 06 SELECTED PROJECTS -->
+<section class="work-section reveal" id="projects" style="background: var(--powder);">
+  <div class="section-label">
+    <span class="num">06</span>
+    <span>Selected Projects</span>
+    <span class="line"></span>
+    <span>Bigger pieces, full notes</span>
+  </div>
+  <h2 class="section-title">The <span class="it">long</span> form.</h2>
+  <p class="section-intro">A few projects worth dwelling on — solo shows, client work, jams, and long-running research.</p>
+
+  <div class="projects-list">
+    <article class="proj" data-cursor="hover">
+      <div class="pmeta">Spring 2026<br><span class="sub">NYU Shanghai</span></div>
+      <div>
+        <h3>Between Waves</h3>
+        <div class="role">Solo exhibition · multimedia interactive</div>
+        <p>Solo exhibition of interactive multimedia artwork at NYU Shanghai. Conceived, fabricated, and installed end to end — combining physical media, video, and interactive components.</p>
+      </div>
+    </article>
+
+    <article class="proj" data-cursor="hover">
+      <div class="pmeta">2026<br><span class="sub">Design Thinking</span></div>
+      <div>
+        <h3>HappyPower — "Biking and Blooming" V3</h3>
+        <div class="role">Product redesign · proposal accepted, advancing to next stage</div>
+        <p>Redesigned a Chinese cycling product from a passive light installation into a navigation-and-charging system for urban cyclists. Researched MEMS mirror, supercapacitor storage, and Class 2 laser optics; wrote the full app interaction flow and the safety architecture (tilt shut-off, lane-boundary projection). Proposal accepted by the client; moving into next development stage.</p>
+      </div>
+    </article>
+
+    <article class="proj" data-cursor="hover">
+      <div class="pmeta">Spring 2026<br><span class="sub">Experience Studio</span></div>
+      <div>
+        <h3>Wild China Education — Experiential Module</h3>
+        <div class="role">Project lead · client-facing concept and delivery</div>
+        <p>Designed an experiential business module for international university students on how design drives virality and consumer culture in China. Ran logistics, scheduling, and delivery across a multi-week timeline; tested the experience on incoming students during NYU Shanghai Admit Weekend; handed off a facilitation guide, interactive artifacts, and a creative media teaser to Wild China Education / Beyond Classrooms.</p>
+      </div>
+    </article>
+
+    <article class="proj" data-cursor="hover">
+      <div class="pmeta">2025<br><span class="sub">48-hour jam</span></div>
+      <div>
+        <h3>Endless Studio Game Jam</h3>
+        <div class="role">Art direction · 3D environment · Unity build · featured entry</div>
+        <p>A short atmospheric exploration game built with a small team over a weekend. Took the lead on visual direction and 3D environment art in Blender, brought assets into Unity, and handled the sound design pass. Selected among the jam's featured entries.</p>
+      </div>
+    </article>
+
+    <article class="proj" data-cursor="hover">
+      <div class="pmeta">2019—2022<br><span class="sub">Comilla University</span></div>
+      <div>
+        <h3>Heritage Digitization — Bengal Trade Sites</h3>
+        <div class="role">Archival research · visual documentation · 2 peer-reviewed papers</div>
+        <p>Long-running collaboration mapping and transcribing historical trade sites across Bengal. Sketches, field notes, and archival structuring fed into museum and exhibition use, and supported two peer-reviewed papers on archaeotourism and early trade.</p>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- 07 ABOUT / CONTACT -->
+<section class="about reveal" id="about">
+  <div class="section-label">
+    <span class="num">07</span>
+    <span>About / Contact</span>
+    <span class="line"></span>
+    <span>Let's talk</span>
+  </div>
+
+  <div class="about-grid">
+    <div class="about-text">
+      <h2>A few <span class="it">words</span><br>about <span class="it">me</span>.</h2>
+      <p><em>A creative, first.</em> The longer version: an Interactive Media student at NYU Abu Dhabi with a maker's appetite who works across just about every medium I can get my hands on — and tends to end up running the logistics too.</p>
+      <p>Trained across creative coding, 3D, fabrication, photography, and design. Comfortable in studio and on site, in code and in clay. Cross-cultural fluency across South Asia, the Gulf, and East Asia.</p>
+      <p style="font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--butter); margin-top: 2rem;">
+        Currently · Abu Dhabi ⟶ Shanghai · 2026
+      </p>
+    </div>
+    <div class="about-contact">
+      <ul class="contact-list">
+        <li data-cursor="hover">
+          <span class="label">Email</span>
+          <a href="mailto:mns9929@nyu.edu" class="val">mns9929@nyu.edu <span class="arrow">↗</span></a>
+        </li>
+        <li data-cursor="hover">
+          <span class="label">Phone · UAE</span>
+          <a href="tel:+971504538165" class="val">+971 50 453 8165 <span class="arrow">↗</span></a>
+        </li>
+        <li data-cursor="hover">
+          <span class="label">Phone · CN</span>
+          <a href="tel:+8618818286538" class="val">+86 188 1828 6538 <span class="arrow">↗</span></a>
+        </li>
+        <li data-cursor="hover">
+          <span class="label">Based</span>
+          <span class="val">Abu Dhabi, UAE</span>
+        </li>
+        <li data-cursor="hover">
+          <span class="label">p5.js</span>
+          <a href="https://editor.p5js.org/Nekonxtdoor" target="_blank" rel="noopener" class="val">editor.p5js.org/Nekonxtdoor <span class="arrow">↗</span></a>
+        </li>
+        <li data-cursor="hover">
+          <span class="label">Languages</span>
+          <span class="val">English · Bengali · Mandarin (basic)</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="exhibitions">
+    <h3>Exhibitions &amp; recognition</h3>
+    <ul>
+      <li><span class="yr">2026</span><span class="ev">Between Waves — solo exhibition, multimedia interactive</span><span class="pl">NYU Shanghai</span></li>
+      <li><span class="yr">2026</span><span class="ev">Interactive Media Arts Showcase</span><span class="pl">NYU Shanghai</span></li>
+      <li><span class="yr">2024–2025</span><span class="ev">Interactive Media Showcase</span><span class="pl">NYU Abu Dhabi</span></li>
+      <li><span class="yr">2025</span><span class="ev">Endless Studio Game Jam — featured entry</span><span class="pl">Shanghai</span></li>
+      <li><span class="yr">2022</span><span class="ev">Asian Art Biennale — exhibiting artist</span><span class="pl">Bangladesh Shilpakala Academy</span></li>
+      <li><span class="yr">2019–2022</span><span class="ev">Co-contributor, peer-reviewed publications on archaeotourism</span><span class="pl">Comilla University</span></li>
+    </ul>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span>© Maliha Nahiyan Srotosshini · 2026</span>
+  <span class="heart">made with <em>care</em> ✿</span>
+  <a href="#" data-cursor="hover">↑ back to top</a>
+</footer>
+
+<script>
+/* LOADER */
+window.addEventListener("load", () => {
+  setTimeout(() => document.getElementById("loader").classList.add("gone"), 1800);
+});
+
+/* CURSOR */
+const dot   = document.getElementById("cursorDot");
+const ring  = document.getElementById("cursorRing");
+const label = document.getElementById("cursorLabel");
+let mx = 0, my = 0, rx = 0, ry = 0;
+
+window.addEventListener("mousemove", e => {
+  mx = e.clientX; my = e.clientY;
+  dot.style.left  = mx + "px";
+  dot.style.top   = my + "px";
+  label.style.left = mx + "px";
+  label.style.top  = (my + 38) + "px";
+});
+function animateRing() {
+  rx += (mx - rx) * 0.18;
+  ry += (my - ry) * 0.18;
+  ring.style.left = rx + "px";
+  ring.style.top  = ry + "px";
+  requestAnimationFrame(animateRing);
+}
+animateRing();
+
+document.querySelectorAll("[data-cursor]").forEach(el => {
+  el.addEventListener("mouseenter", () => {
+    const mode = el.dataset.cursor;
+    ring.classList.remove("hovering", "text-hover", "drag");
+    if (mode === "hover") ring.classList.add("hovering");
+    if (mode === "text")  ring.classList.add("text-hover");
+    if (mode === "drag")  ring.classList.add("drag");
+    if (el.dataset.label) {
+      label.textContent = el.dataset.label;
+      label.classList.add("show");
+    }
+  });
+  el.addEventListener("mouseleave", () => {
+    ring.classList.remove("hovering", "text-hover", "drag");
+    label.classList.remove("show");
+  });
+});
+
+/* RIPPLE on click */
+document.addEventListener("click", e => {
+  if (e.target.closest("iframe")) return;
+  const r = document.createElement("div");
+  r.className = "ripple";
+  r.style.left = e.clientX + "px";
+  r.style.top  = e.clientY + "px";
+  document.body.appendChild(r);
+  setTimeout(() => r.remove(), 800);
+});
+
+/* MENU */
+const menuBtn = document.getElementById("menuBtn");
+const menuOverlay = document.getElementById("menuOverlay");
+const menuClose = document.getElementById("menuClose");
+menuBtn.addEventListener("click", () => menuOverlay.classList.add("open"));
+menuClose.addEventListener("click", () => menuOverlay.classList.remove("open"));
+document.querySelectorAll("[data-close]").forEach(a => {
+  a.addEventListener("click", () => menuOverlay.classList.remove("open"));
+});
+
+/* REVEAL */
+const io = new IntersectionObserver(entries => {
+  entries.forEach(en => { if (en.isIntersecting) en.target.classList.add("in"); });
+}, { threshold: 0.12 });
+document.querySelectorAll(".reveal").forEach(el => io.observe(el));
+
+/* DRAG TO SCROLL — 3D */
+const scroller = document.getElementById("threedScroll");
+let isDown = false, startX, scrollLeft;
+scroller.addEventListener("mousedown", e => {
+  isDown = true;
+  startX = e.pageX - scroller.offsetLeft;
+  scrollLeft = scroller.scrollLeft;
+});
+["mouseleave","mouseup"].forEach(ev => scroller.addEventListener(ev, () => isDown = false));
+scroller.addEventListener("mousemove", e => {
+  if (!isDown) return;
+  e.preventDefault();
+  const x = e.pageX - scroller.offsetLeft;
+  scroller.scrollLeft = scrollLeft - (x - startX) * 1.6;
+});
+
+/* HERO PARALLAX on scroll */
+const heroShapes = document.getElementById("heroShapes");
+const heroTitle  = document.getElementById("heroTitle");
+window.addEventListener("scroll", () => {
+  const y = window.scrollY;
+  if (y > 900) return;
+  heroShapes.style.transform = `translateY(${y * 0.3}px)`;
+  heroTitle.style.transform  = `translateY(${y * 0.15}px)`;
+  heroTitle.style.opacity    = Math.max(0, 1 - y / 600);
+});
+
+/* MOUSE-FOLLOWING HERO BLOBS */
+const shapes = document.querySelectorAll(".shape");
+window.addEventListener("mousemove", e => {
+  if (window.scrollY > 900) return;
+  const cx = (e.clientX / window.innerWidth - 0.5) * 2;
+  const cy = (e.clientY / window.innerHeight - 0.5) * 2;
+  shapes.forEach((s, i) => {
+    const intensity = (i + 1) * 10;
+    s.style.transform = `translate(${cx * intensity}px, ${cy * intensity}px)`;
+  });
+});
+</script>
+
+</body>
+</html>
