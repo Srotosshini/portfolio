@@ -576,6 +576,11 @@ section.work-section { padding: var(--section-pad) 2rem; position: relative; }
   transition: transform .5s ease;
 }
 .photo:hover { transform: scale(1.02); }
+.photo img {
+  width: 100%;
+  display: block;
+  object-fit: cover;
+}
 .photo .swatch { width: 100%; display: block; }
 .photo-caption {
   position: absolute; bottom: 0; left: 0; right: 0;
@@ -590,15 +595,6 @@ section.work-section { padding: var(--section-pad) 2rem; position: relative; }
   transition: opacity .3s;
 }
 .photo:hover .photo-caption { opacity: 1; }
-.photo-1 .swatch { aspect-ratio: 3/4; background: linear-gradient(160deg, #b0c4d8, #5a7a98); }
-.photo-2 .swatch { aspect-ratio: 4/5; background: linear-gradient(200deg, #d8c89a, #a89472); }
-.photo-3 .swatch { aspect-ratio: 1/1; background: linear-gradient(135deg, #b8c8d4, #7a96a8); }
-.photo-4 .swatch { aspect-ratio: 3/4; background: linear-gradient(180deg, #e0d5b8, #b89878); }
-.photo-5 .swatch { aspect-ratio: 4/3; background: linear-gradient(220deg, #98a8c8, #5868a0); }
-.photo-6 .swatch { aspect-ratio: 2/3; background: linear-gradient(145deg, #b8c8d8, #6878a0); }
-.photo-7 .swatch { aspect-ratio: 4/5; background: linear-gradient(170deg, #d0c8a8, #98886c); }
-.photo-8 .swatch { aspect-ratio: 1/1; background: linear-gradient(190deg, #a0b0c8, #506890); }
-.photo-9 .swatch { aspect-ratio: 3/4; background: linear-gradient(155deg, #c0c8d8, #708098); }
 @media (max-width: 900px) { .masonry { columns: 2; } }
 @media (max-width: 560px) { .masonry { columns: 1; } }
 
@@ -1180,8 +1176,8 @@ footer .heart {
   <p class="section-intro">Stills from across Bangladesh, the Gulf, and East Asia. Mostly DSLR and mirrorless, graded in Lightroom and DaVinci Resolve. Replace each gradient placeholder with a real image when you're ready.</p>
 
   <div class="masonry">
-    <div class="photo photo-1" data-cursor="hover"><div class="swatch"></div><div class="photo-caption">Blue hour · 35mm</div></div>
-    <div class="photo photo-2" data-cursor="hover"><div class="swatch"></div><div class="photo-caption">Field study · graded</div></div>
+    <div class="photo photo-1" data-cursor="hover"><img src="assets/photos/pcg1.png" alt="Photography work"><div class="photo-caption">Blue hour · 35mm</div></div>
+    <div class="photo photo-2" data-cursor="hover"><img src="assets/photos/pcg2.png" alt="Vortex Height photography work"><div class="photo-caption">Field study </div></div>
     <div class="photo photo-3" data-cursor="hover"><div class="swatch"></div><div class="photo-caption">Cool morning</div></div>
     <div class="photo photo-4" data-cursor="hover"><div class="swatch"></div><div class="photo-caption">Warm contrast</div></div>
     <div class="photo photo-5" data-cursor="hover"><div class="swatch"></div><div class="photo-caption">Dusk frame</div></div>
